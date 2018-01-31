@@ -1,0 +1,26 @@
+{
+  "name": "WebApp",
+  "version": "1.0.0",
+  "description": "This is a readMe file for the file.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Intenserave",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.2",
+    "mysql": "^2.13.0",
+    "passport": "^0.4.0",
+    "passport-local-mongoose": "^4.4.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "tutorial",
+    "testApp"
+  ]
+}
