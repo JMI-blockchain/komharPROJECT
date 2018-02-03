@@ -7,8 +7,16 @@ var bodyParser = require('body-parser');
 //for database queries
 var mongoose = require('mongoose');
 var user = require('./models/db');
-var passport = require('passport');
 
+//for sessions
+var session = require('express-session');
+
+//passport js
+var passport=require('passport');
+
+//bcrypt for hashing the password
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
 /*
 var newuser= user({username:'himanshu',password:'dfgkjl'}).save(function(err,data){
   if(err) throw err;
@@ -26,9 +34,12 @@ app.set('view engine','ejs');
 
 //for loading the static files required in the views
 app.use(express.static('./views'));
-
+app.use(session({secret:"45rtfgy67tygh9uik65",resave:false,saveUninitialized:true}));
 //Parser object
 var urlencodedParser = bodyParser.urlencoded({extended:false});
+//passport use
+app.use(passport.initialize());
+app.use(passport.session());
 
 //routes
 app.get('/',function(req,res){
@@ -61,6 +72,21 @@ app.get('/register-success/:username',function(req,res){
   res.render('register-success',{uname:req.params.username});
 });
 
+app.get('/dashboard',function(req,res){
+  console.log(req.session);
+  if(!req.session.user){
+    return res.status(401).redirect('/login');
+  }
+  else {
+    return res.status(200).render('profile',{person:req.session.user.username});
+  }
+});
+
+app.get('/logout',function(req,res){
+  //console.log(req.session.user.username+" is logged out");
+  req.session.destroy();
+  res.redirect('/login');
+});
 //routes for the post requests
 
 app.post('/register',urlencodedParser,function(req,res,next){
@@ -68,22 +94,30 @@ app.post('/register',urlencodedParser,function(req,res,next){
 
   var name=req.body.username;
   var pass=req.body.password;
-  var newuser= user({username:name,password:pass}).save(function(err,data){
-    if(err){
-        console.log("Failed to register !! Try Again");
-      return res.status(404).render("register",{flag:true});
-    }
-      else {
-        console.log("Succesfully registered with username " +name);
-        res.redirect('/register-success/'+name);
+
+  bcrypt.hash(pass, saltRounds, function(err, hash) {
+    // Store hash in your password DB.
+    var newuser= user({username:name,password:hash}).save(function(err,data){
+      if(err){
+          console.log("Failed to register !! Try Again");
+        return res.status(404).render("register",{flag:true});
       }
-    });
+        else {
+          console.log("Succesfully registered with username " +name);
+          res.redirect('/register-success/'+name);
+        }
+      });
+
+  });
+
+
 });
 
 app.post('/login',urlencodedParser,function(req,res){
   var name=req.body.username;
   var pass=req.body.password;
-  user.findOne({username:name,password:pass},function(err,data){
+
+  user.findOne({username:name},function(err,data){
     if(err){
         console.log("Failed to login !! Try Again");
         return res.status(500).send("Error Occured something wrong with database");
@@ -93,8 +127,19 @@ app.post('/login',urlencodedParser,function(req,res){
       return res.status(404).render("login",{flag:true});
     }
     else {
-      console.log("Login Succesfully");
-      res.redirect('/profile/'+data.username);
+      bcrypt.compare(pass,data.password,function(err,isMatch){
+        if(isMatch){
+          console.log("Login Succesfully");
+          //added to the session
+          req.session.user=data;
+
+          res.redirect('/dashboard');
+        }
+        else{
+          return res.status(404).render("login",{flag:true});
+        }
+      });
+
     }
   });
 });
