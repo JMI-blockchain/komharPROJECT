@@ -3,7 +3,6 @@ var express =require('express');
 
 //for parsing the data string sent over the network
 var bodyParser = require('body-parser');
-
 //for database queries
 var mongoose = require('mongoose');
 var user = require('./models/db');
@@ -14,8 +13,10 @@ var session = require('express-session');
 //passport js
 var passport=require('passport');
 
+var WEB3  = require('./models/web3');
+
 //bcrypt for hashing the password
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcryptjs');
 const saltRounds = 10;
 /*
 var newuser= user({username:'himanshu',password:'dfgkjl'}).save(function(err,data){
@@ -52,7 +53,7 @@ app.get('/login',function(req,res){
 });
 app.get('/register',function(req,res){
   console.log("Register Page");
-res.render('register',{flag:false});
+  res.render('register',{flag:false});
 });
 
 app.get('/about',function(req,res){
@@ -95,14 +96,34 @@ app.post('/register',urlencodedParser,function(req,res,next){
   var name=req.body.username;
   var pass=req.body.password;
 
+  console.log('On server side!!');
+
+  //console.log(WEB3.publicKey);
+  //console.log(WEB3.encPrivateKey);
+
   bcrypt.hash(pass, saltRounds, function(err, hash) {
     // Store hash in your password DB.
-    var newuser= user({username:name,password:hash}).save(function(err,data){
+    var newuser= user.User({username:name,password:hash}).save(function(err,data){
       if(err){
           console.log("Failed to register !! Try Again");
         return res.status(404).render("register",{flag:true});
       }
         else {
+          //console.log(WEB3.encPrivateKey(password));
+          //toDo--->generate user wallet and store private key in encrypted form
+          //getting the encrypted private key
+          var k = WEB3(pass);
+          //storing the private key in DB
+          var Pkey = user.Key({username:name,encKey: k}).save(function(err,data){
+            if(err){
+              console.log('Failed to store encrypted private key in database');
+            }
+            else{
+              console.log(data);
+            }
+          });
+          //var enckey = user.Key({username: name,})
+          //console.log(data);
           console.log("Succesfully registered with username " +name);
           res.redirect('/register-success/'+name);
         }
