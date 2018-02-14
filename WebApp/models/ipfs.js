@@ -32,6 +32,7 @@ console.log("Synchronous read: " + data.toString());
         }
     })
 })
+return files.hash;
 }
 
 module.exports.ipfsupload=ipfsupload;
