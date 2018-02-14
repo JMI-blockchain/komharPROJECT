@@ -20,7 +20,7 @@ console.log("Synchronous read: " + data.toString());
 
     let files = [
         {
-            path: path,
+            path: filepath,
             content: data
         }
     ]
