@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 //express import
 var express =require('express');
 
@@ -36,7 +38,7 @@ app.set('view engine','ejs');
 app.use(express.static('./views'));
 app.use(session({secret:"45rtfgy67tygh9uik65",resave:false,saveUninitialized:true}));
 //Parser object
-var urlencodedParser = bodyParser.urlencoded({extended:false});
+var urlencodedParser = bodyParser.urlencoded({extended:true});
 //passport use
 app.use(passport.initialize());
 app.use(passport.session());
@@ -144,5 +146,79 @@ app.post('/login',urlencodedParser,function(req,res){
   });
 });
 
+/*IPFS FILE UPOLOAD CODE BY AMISH*/
+
+//multer middleware
+var multer  = require('multer');
+var upload = multer({ dest: './z000000z00'});
+
+var ipfsAPI = require('ipfs-api')
+//var ipfs = ipfsAPI('localhost', '5001', {protocol: 'http'}) 
+var ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
+const IPFS = require('ipfs');
+
+// Spawn your IPFS node \o/
+const node = new IPFS();
+
+app.post('/file_upload', upload.single('filer'), function (req, res, next)  {
+   var tmp_path = req.file.path;
+  console.log(tmp_path);
+var hashes=ipfs.id()
+    {
+      //showStatus(`daemon active\nid: ${res.ID}`, COLORS.success)
+      var data = fs.readFileSync('./'+tmp_path);
+console.log("Synchronous read: " + data.toString());
+      var hashes2=""; 
+    let files = [
+        {
+            path:'./'+tmp_path,
+            content: data
+        }
+    ]
+    node.files.add(files, function (err,files) {
+        if (err) {
+            console.log(err);
+        } else {
+hashes2="hash:"+files[0].hash
+hashes=hashes2;
+return hashes2;
+            console.log(files[0].hash)
+                
+         }
+    })
+    }
+/*
+BELOW CODE IS OLD ONE NOT WORKING 
+node.on('ready', () => {
+    node.id((err, id) => {
+        if (err) {
+            return console.log(err)
+        }
+        console.log(id)
+    })
+    
+var data = fs.readFileSync('./'+tmp_path);
+console.log("Synchronous read: " + data.toString());
+
+    let files = [
+        {
+            path:'./'+tmp_path,
+            content: data
+        }
+    ]
+console.log(files.path);
+    node.files.add(files, function (err, files) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(files[0].hash)
+        }
+    })
+})*/
+setTimeout(function(){ console.log("haha"+hashes);
+//res.end();
+  res.send(hashes); }, 3000);
+
+})
 
 app.listen(4000);

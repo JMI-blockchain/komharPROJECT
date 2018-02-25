@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ 
 </head>
 <body style="background:transparent url('subtlenet2.png')">
 <nav class="navbar navbar-inverse">
@@ -36,11 +37,11 @@
   <h3>Upload new file</h3>
 </div>
 <div class="container">
-<form action = "http://127.0.0.1:8081/file_upload" method = "POST"
+<form id="file-form" method = "POST"
          enctype = "multipart/form-data">
-         <input type="file" name="file" size="50" />
+         <input type="file" id="file-select" name="filer" size="5000" />
          <br />
-         <input type = "submit" value = "Upload File" />
+         <input type = "submit" id="upload-button" value = "Upload File" />
       </form>
 </div>
 <div class="container">
@@ -48,8 +49,8 @@
   </br>Previously Uploaded Files</h3>
 </div>
 <div class="container">
-<form action="/action_page.php" method="get">
-  <button type="submit" class="btn btn-primary btn-lg" formaction="#">file Hash1</button><br><br>
+
+  <button type="submit" class="btn btn-primary btn-lg" id="1" formaction="#">file Hash1</button><br><br>
   <button type="submit" class="btn btn-primary btn-lg" formaction="#">file Hash2</button><br><br>
   <button type="submit" class="btn btn-primary btn-lg" formaction="#">file Hash3</button><br><br>
   <button type="submit" class="btn btn-primary btn-lg" formaction="#">file Hash4</button><br><br>
@@ -59,4 +60,49 @@
 <!-- Grid With Keyboard Navigation - END -->
 
 </body>
+ <script>
+var form = document.getElementById('file-form');
+var fileSelect = document.getElementById('file-select');
+var uploadButton = document.getElementById('upload-button');
+form.onsubmit = function(event) {
+  event.preventDefault();
+
+  // Update button text.
+  uploadButton.innerHTML = 'Uploading...';
+
+  // Get the selected files from the input.
+var files = fileSelect.files;
+
+ // Create a new FormData object.
+var formData = new FormData();
+
+// Loop through each of the selected files.
+for (var i = 0; i < files.length; i++) {
+  var file = files[i];
+
+  // Add the file to the request.
+  formData.append('filer', file, file.name);
+  }
+
+// Set up the request.
+var xhr = new XMLHttpRequest();
+
+// Open the connection.
+xhr.open('POST', 'http://127.0.0.1:4000/file_upload', true);
+
+// Set up a handler for when the request finishes.
+xhr.onload = function () {
+  if (xhr.status === 200) {
+    // File(s) uploaded.
+document.getElementById("1").innerHTML=xhr.responseText;
+   
+  } else {
+    alert('An error occurred!');
+  }
+};
+
+// Send the Data.
+xhr.send(formData);
+}
+</script>
 </html>
